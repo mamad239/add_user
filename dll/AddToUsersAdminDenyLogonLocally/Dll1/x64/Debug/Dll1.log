@@ -1,0 +1,7 @@
+﻿  dllmain.cpp
+C:\Users\qwe\source\repos\TextInput_org\Dll1\dllmain.cpp(43,42): warning C4267: '=': conversion from 'size_t' to 'USHORT', possible loss of data
+  (compiling source file '/dllmain.cpp')
+  
+C:\Users\qwe\source\repos\TextInput_org\Dll1\dllmain.cpp(58,1): warning C4715: 'AddUserToDenyLogonLocally': not all control paths return a value
+     Creating library C:\Users\qwe\source\repos\TextInput_org\x64\Debug\Dll1.lib and object C:\Users\qwe\source\repos\TextInput_org\x64\Debug\Dll1.exp
+  Dll1.vcxproj -> C:\Users\qwe\source\repos\TextInput_org\x64\Debug\Dll1.dll

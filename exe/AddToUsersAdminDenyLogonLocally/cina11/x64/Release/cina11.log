@@ -1,0 +1,9 @@
+﻿  cina11.cpp
+C:\Users\qwe\source\repos\cina11\cina11\cina11.cpp(38,42): warning C4267: '=': conversion from 'size_t' to 'USHORT', possible loss of data
+  Generating code
+  5 of 102 functions ( 4.9%) were compiled, the rest were copied from previous compilation.
+    3 functions were new in current compilation
+    12 functions had inline decision re-evaluated but remain unchanged
+C:\Users\qwe\source\repos\cina11\cina11\cina11.cpp(49): warning C4715: 'AddUserToDenyLogonLocally': not all control paths return a value
+  Finished generating code
+  cina11.vcxproj -> C:\Users\qwe\source\repos\cina11\x64\Release\cina11.exe
